@@ -1,4 +1,4 @@
-FROM lscr.io/linuxserver/beets:2.5.1
+FROM lscr.io/linuxserver/beets:2021.12.16
 
 COPY requirements.txt /tmp/requirements.txt
 
