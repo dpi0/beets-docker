@@ -1,0 +1,1 @@
+beets-filetote==1.1.0
