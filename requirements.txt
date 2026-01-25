@@ -1,1 +1,2 @@
 beets-filetote==1.1.0
+librosa==0.11.0
