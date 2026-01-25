@@ -1,1 +1,1 @@
-beets-filetote==1.1.0
+beets-filetote==1.1.1
