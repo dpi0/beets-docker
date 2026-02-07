@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsamplerate0-dev \
     libblas-dev \
     liblapack-dev \
+    libsoxr-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 1000 beetsgroup \
