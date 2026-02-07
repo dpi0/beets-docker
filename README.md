@@ -3,24 +3,28 @@
 Custom [beets.io](https://beets.readthedocs.io/en/stable/index.html) docker image.
 
 > [!IMPORTANT]
-> Previous to `c09c487` commit, this image was `lscr.io/linuxserver/beets` + some plugins.
-
-Each image is tagged with the hash of the latest build commit, for example: `ghcr.io/dpi0/beets-docker:01e8aee`
+> Prior to `c09c487` commit, this image was `lscr.io/linuxserver/beets` + some plugins.
 
 ## Usage
 
+Pull the image
+
 ```bash
-docker compose run --rm beets import /hdd/Downloads/Music/Soulseek/Albums/Handsomeboy\ Technique\ -\ Adelie\ Land\ \[2005\]\ \[CD\ 320\]
+docker pull dpi0/beets-docker:latest
 ```
 
-You can use this sample `compose.yaml` for reference
+And run with the sample `compose.yaml` below for reference
+
+```bash
+docker compose run --rm beets import "/hdd/Downloads/Music/Soulseek/Complete/Nujabes/Modal Soul"
+```
 
 <details> <summary><strong>compose.yaml</strong></summary>
 
 ```yaml
 services:
   beets:
-    image: ghcr.io/dpi0/beets-docker:latest
+    image: dpi0/beets-docker:latest
     container_name: beets
     volumes:
       - /data/beets/config:/data/config
