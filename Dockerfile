@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsamplerate0-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup -g 1000 beetsgroup \
-    && adduser -D -u 1000 -G beetsgroup beetsuser
+RUN groupadd -g 1000 beetsgroup \
+    && useradd -m -u 1000 -g beetsgroup beetsuser
 
 COPY requirements.txt /tmp/requirements.txt
 
