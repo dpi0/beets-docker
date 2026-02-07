@@ -2,3 +2,5 @@ beets==2.5.1
 requests==2.32.5
 pylast==6.0.0
 pillow==11.3.0
+beets-bpmanalyser==1.5.9
+numpy<2.0
