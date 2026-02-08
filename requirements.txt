@@ -4,3 +4,4 @@ pylast==6.0.0
 pillow==11.3.0
 beets-bpmanalyser==1.5.9
 numpy<2.0
+beets-xtractor==0.6.12
