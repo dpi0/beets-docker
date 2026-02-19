@@ -1,4 +1,4 @@
 beets==2.5.1
 requests==2.32.5
 pylast==6.0.0
-pillow==11.3.0
+pillow==12.1.1
