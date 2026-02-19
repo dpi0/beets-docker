@@ -23,6 +23,8 @@ jobs:
         id: meta
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPO }}
+          flavor: |
+            latest=false
           tags: |
             type=ref,event=tag
       - uses: docker/build-push-action@v6

@@ -17,7 +17,7 @@ You can use this sample `compose.yaml` for reference
 ```yaml
 services:
   beets:
-    image: dpi0/beets-docker:minimal
+    image: dpi0/beets-docker:minimal-v1.0.0
     container_name: beets
     volumes:
       - /data/beets/config:/data/config
