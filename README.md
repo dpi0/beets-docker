@@ -1,0 +1,165 @@
+# Beets Docker
+
+Custom [beets.io](https://beets.readthedocs.io/en/stable/index.html) Docker image.
+
+The `minimal-v*` image tag is for the simplest possible beets set up with basic plugins.
+
+## How to Use?
+
+```bash
+docker compose run --rm beets import "/hdd/Downloads/Music/Album"
+```
+
+You can use this sample `compose.yaml` for reference
+
+<details> <summary><strong>compose.yaml</strong></summary>
+
+```yaml
+services:
+  beets:
+    image: dpi0/beets-docker:minimal
+    container_name: beets
+    volumes:
+      - /data/beets/config:/data/config
+      - /data/beets/db:/data/db
+      - /data/beets/logs:/data/logs
+      - /data/config/beets-config.yaml:/data/config/config.yaml
+      - /hdd/Downloads/Music:/hdd/Downloads/Music
+      - /hdd/Library/Music:/hdd/Library/Music
+    user: "1000:1000"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1.0
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      BEETSDIR: /data/config
+```
+
+</details>
+
+With this sample `beets-config.yaml`
+
+<details> <summary><strong>beets-config.yaml</strong></summary>
+
+```yaml
+# GLOBAL OPTIONS
+# https://beets.readthedocs.io/en/stable/reference/config.html#global-options
+directory: /hdd/Library/Music # Library directory
+library: /data/db/musiclibrary.blb
+art_filename: cover # Save the artwork file as cover.jpg/png etc (Needed for Navidrome)
+original_date: yes # Use original release date for tagging (not the updated remastered date)
+per_disc_numbering: yes # When yes, Disc 2 track 1 becomes track 11 (instead of restarting at 1).
+replace: # Applied to all filenames created
+  '[\\/]': _
+  '^\.': _
+  '[\x00-\x1f]': _
+  '[<>:"\?\*\|]': _
+  '\.$': _
+  '\s+$': ''
+  '^\s+': ''
+  '^-': _
+import:
+  copy: yes # Only copy the files from DOWNLOADS --> LIBRARY (imo lot safer and better)
+  move: no # Move the downloaded files over to library (I'm sharing the Library or Media directory now so this is fine)
+  resume: ask # If an import is interrupted, beets asks whether to resume next time.
+  incremental: yes # Auto skip files already in the db (revert this by using -I or --noincremental to force import)
+  quiet: no # Skip the prompts, and auto apply (say yes to prompts)
+paths:
+  # FOR PATH FORMATS: https://beets.readthedocs.io/en/stable/reference/pathformat.html
+  singleton: Singles/$artist/$title
+  default: Albums/$albumartist/[$year] $album%aunique{} [$format]/$track $title
+  comp: Compilations/$album%aunique{} [$year] [$format]/$track $artist - $title
+  albumtype_soundtrack: Soundtrack/$albumartist/[$year] $album%aunique{} [$format]/$track $title
+match:
+  strong_rec_thresh: 0.30 # = 70%, Auto [A]pply the import when match above 70% (0.10 for 90%, 0.04 for 96% and so on)
+  medium_rec_thresh: 0.45 # 55%, Matches between 70% and 55% similarity are suggested, not auto-applied.
+  rec_gap_thresh: 0.35 # Even if a match is weak, suggest it if it is much better than the alternatives.
+# PLUGINS
+plugins:
+  # - autobpm # Calc the BPM of a track (needs librosa and completey new and heavy docker image)
+  # - chroma # Does Audio Fingerprinting to match files by sound. Useful when filesnames are wrong/bad metadata
+  - embedart # Embeds album artwork directly into audio files’ metadata
+  - fetchart # Locates album artwork
+  - fromfilename # Uses the filename for additional info about the track if not enough metadata is present
+  # - ftintitle # Moves “featured” artists from the artist field to the title field
+  - lastgenre # Additional metadata using Last.fm
+  # - lyrics # Adds only embedded lyrics to the track
+  - musicbrainz # Primary metadata authority
+  - scrub # Removes all metadata before beets works on the files (prevents prev bad metadata leaks)
+  # - smartplaylist # Create .m3u files for playlists
+  - zero # Removes certain metadata (scrub was meant to remove all before import, but it doesn't work reliably imo)
+  # - bpmanalyser
+# PLUGIN CONFIGURATION
+# https://beets.readthedocs.io/en/stable/plugins/index.html
+# https://beets.readthedocs.io/en/stable/plugins/autobpm.html
+autobpm:
+  auto: no
+# https://github.com/adamjakab/BeetsPluginBpmAnalyser
+bpmanalyser:
+  auto: no
+  write: yes
+  force: no
+# https://beets.readthedocs.io/en/stable/plugins/chroma.html
+chroma:
+  # auto: no # When no, not auto applied during imports (have to manually - beet chroma)
+  auto: yes
+  search_limit: 5 # number of AcoustID matches evaluated per track (Increase (10–15) → very obscure music)
+  data_source_mismatch_penalty: 0.5 # Prevent overriding good metadata (0.2–0.3 → strict, safer for curated libraries)
+# https://beets.readthedocs.io/en/stable/plugins/embedart.html#configuration
+embedart:
+  auto: yes # When yes, will auto apply when running import (essentially auto enabling it)
+  ifempty: no # When yes, dpn't embed art if embedded art already present
+# https://beets.readthedocs.io/en/stable/plugins/fetchart.html#configuration
+fetchart:
+  auto: yes # When yes, Auto enable during import
+  minwidth: 1200 # In px, lower limit
+  maxwidth: 0 # When 0, no upper limit
+  high_resolution: yes # When yes, go for the highest-resolution art available
+  cover_format: jpg # Only jpg images
+  sources: # Searched in order
+    - coverart # MusicBrainz Cover Art Archive
+# https://beets.readthedocs.io/en/stable/plugins/ftintitle.html#configuration
+ftintitle:
+  auto: yes
+  keep_in_artist: yes # Keep the featuring X part in the artist field as well (along with the title track)
+# https://beets.readthedocs.io/en/stable/plugins/lastgenre.html#configuration
+# Doesn't need too much tweaking
+# https://beets.readthedocs.io/en/stable/plugins/hook.html
+lastgenre:
+  auto: yes
+  count: 3 # Number of genres to fetch. Default: 1
+  separator: '; ' # Separator b/w multiple genre tags
+  force: yes # Force fetch tags even if track already has genres
+  keep_existing: no # Force replace existing tags (wiping them)
+# https://beets.readthedocs.io/en/stable/plugins/lyrics.html#configuration
+lyrics:
+  auto: no
+  synced: yes # When yes, instead of plain lyrics used synced lyrics (from lrclib)
+  force: yes # When yes, force download even when files already have them
+  sources:
+    - lrclib
+# https://beets.readthedocs.io/en/stable/plugins/musicbrainz.html#configuration
+musicbrainz:
+  search_limit: 10
+  extra_tags: [catalognum, country, label, media, year] # Only these extra tags are supported
+  genres: yes
+# https://beets.readthedocs.io/en/stable/plugins/scrub.html
+scrub:
+  auto: yes
+# https://beets.readthedocs.io/en/stable/plugins/smartplaylist.html#configuration
+# smartplaylist:
+#   relative_to: library
+#   playlist_dir: /hdd/Library/Music/Playlists
+# https://beets.readthedocs.io/en/stable/plugins/zero.html#configuration
+zero:
+  auto: yes
+  fields: lyrics comments encoder albumdisambig # Removes only these fields from the metadata
+  omit_single_disc: yes # When yes, If an album has only one disc, remove the disc=1
+  update_database: true # WHen true, Update the db as well
+```
+
+</details>
