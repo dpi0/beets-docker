@@ -1,5 +1,7 @@
 FROM python:3.12-alpine
 
+RUN apk add --no-cache chromaprint
+
 RUN addgroup -g 1000 beetsgroup \
     && adduser -D -u 1000 -G beetsgroup beetsuser
 
